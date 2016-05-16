@@ -1519,8 +1519,19 @@ func (c *Container) Migrate(cmd uint, opts MigrateOptions) error {
 		predump_dir: cpredumpdir,
 	}
 
+	if !VersionAtLeast(2, 0, 1) {
+		if opts.PreservesInodes {
+			return fmt.Errorf("this version of LXC does not support PreserveInodes")
+		}
+
+		if opts.LeaveFrozen {
+			return fmt.Errorf("this version of LXC does not support LeaveFrozen")
+		}
+	}
+
 	extras := C.struct_extra_migrate_opts{
 		preserves_inodes: C.bool(opts.PreservesInodes),
+		leave_frozen:     C.bool(opts.LeaveFrozen),
 	}
 
 	ret := C.int(C.go_lxc_migrate(c.container, C.uint(cmd), &copts, &extras))
